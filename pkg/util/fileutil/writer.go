@@ -81,6 +81,24 @@ func WritePayloads(path string, payloads []*v1alpha1.File) error {
 	return nil
 }
 
+// Cleanup will remove the unwanted relative paths from targetPath.
+func Cleanup(targetPath string, unwanted []string) error {
+	for _, path := range unwanted {
+		fullPath := filepath.Join(targetPath, path)
+		if err := validatePath(fullPath); err != nil {
+			return err
+		}
+		if filepath.Clean(fullPath) != fullPath {
+			return fmt.Errorf("invalid filepath: %q", path)
+		}
+		if err := os.Remove(fullPath); !os.IsNotExist(err) {
+			return err
+		}
+	}
+	// should this cleanup empty directories?
+	return nil
+}
+
 // validatePath validates a single path, returning an error if the path is
 // invalid.  paths may not:
 //

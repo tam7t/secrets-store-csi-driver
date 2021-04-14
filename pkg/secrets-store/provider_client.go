@@ -206,5 +206,42 @@ func MountContent(ctx context.Context, client v1alpha1.CSIDriverProviderClient, 
 		klog.V(5).Infof("mount response has no files")
 	}
 
+	// on rotation if an object is no longer part of the mount then it needs to
+	// be deleted.
+	//
+	// If the provider decides an object should not be re-fetched (based on the
+	// CurrentObjectVersion), it should include that object version in the
+	// response object versions but NOT include the file in the response Files.
+	// This is because the plugins would not have access to volume filesystem
+	// and does not want to re-fetch the object from the secrets API since it
+	// knows it hasnt changed.
+	//
+	// objectVersions arnt validated.
+	// don't want to expose objectVersions to fileutil
+	// could extend the File message to have a version filed and an "unchanged"
+	// field so that there is a single object, not FIles + objectVersions
+	//
+	// oh shoot, objectVersions is NOT file paths. no way to determine from
+	// response objectVersions which file paths havent changed...
+	//
+	// maybe add a field to ObjectVersion to mark which relative path(s) in the
+	// mount the 'object' is associated with?
+	//
+	// remove option for providers to have no-fetch optimizations? make them
+	// always return the full mount filesystem? (they could do caching internally
+	// but no object-version, re-use filesystem files optimizations)
+	fileutil.Cleanup(targetPath, compare(objectVersions, oldObjectVersions))
+
 	return objectVersions, "", nil
+}
+
+// compare returns all keys of map 'in' that are NOT in the map 'notIn'.
+func compare(in, notIn map[string]string) []string {
+	out := []string{}
+	for k := range in {
+		if _, ok := notIn[k]; !ok {
+			out = append(out, k)
+		}
+	}
+	return out
 }
