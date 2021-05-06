@@ -35,6 +35,7 @@ func TestValidate_Success(t *testing.T) {
 	cases := []struct {
 		name    string
 		payload []*v1alpha1.File
+		skipon  string
 	}{
 		{
 			name: "valid double payload",
@@ -56,10 +57,19 @@ func TestValidate_Success(t *testing.T) {
 			},
 		},
 		{
-			name: "valid nested path",
+			name: "valid nested path (linux)",
 			payload: []*v1alpha1.File{
 				{
 					Path: "foo/bar",
+				},
+			},
+			skipon: "windows",
+		},
+		{
+			name: "valid nested path",
+			payload: []*v1alpha1.File{
+				{
+					Path: "foo\\\\bar",
 				},
 			},
 		},
@@ -67,6 +77,9 @@ func TestValidate_Success(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.skipon == runtime.GOOS {
+				t.SkipNow()
+			}
 			if err := Validate(tc.payload); err != nil {
 				t.Errorf("%v: unexpected error: %v", tc.name, err)
 			}
