@@ -66,10 +66,12 @@ func TestValidate_Success(t *testing.T) {
 			skipon: "windows",
 		},
 		{
-			name: "valid nested path",
+			name: "valid nested path (windows)",
+			// note: on linux this will be treated as a file with name `foo\bar`
+			// not a file `bar` nested in the directory `foo`.
 			payload: []*v1alpha1.File{
 				{
-					Path: "foo\\\\bar",
+					Path: "foo\\bar",
 				},
 			},
 		},
