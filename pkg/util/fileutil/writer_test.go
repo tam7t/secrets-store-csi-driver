@@ -23,6 +23,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -426,9 +427,18 @@ func readPayloads(path string, payloads []*v1alpha1.File) error {
 		if err != nil {
 			return err
 		}
-		if info.Mode() != fs.FileMode(p.Mode) {
-			return fmt.Errorf("unexpected file mode. got: %v, want: %v", info.Mode(), fs.FileMode(p.Mode))
+		if runtime.GOOS == "windows" {
+			// on windows only the 0200 bitmask is used by chmod
+			// https://golang.org/src/os/file.go?s=15847:15891#L522
+			if (info.Mode() & 0200) != (fs.FileMode(p.Mode) & 0200) {
+				return fmt.Errorf("unexpected file mode. got: %v, want: %v", info.Mode(), fs.FileMode(p.Mode))
+			}
+		} else {
+			if info.Mode() != fs.FileMode(p.Mode) {
+				return fmt.Errorf("unexpected file mode. got: %v, want: %v", info.Mode(), fs.FileMode(p.Mode))
+			}
 		}
+
 		contents, err := os.ReadFile(fp)
 		if err != nil {
 			return err

@@ -49,7 +49,13 @@ func TestGetMountedFiles(t *testing.T) {
 			name: "target path dir/file found",
 			targetPath: func(t *testing.T) string {
 				dir := tmpdir.New(t, "", "ut")
-				os.Create(filepath.Join(dir, "secret.txt"))
+				f, err := os.Create(filepath.Join(dir, "secret.txt"))
+				if err != nil {
+					t.Fatalf("error writing file: %s", err)
+				}
+				if err := f.Close(); err != nil {
+					t.Fatalf("error writing file: %s", err)
+				}
 				return dir
 			},
 			expectedErr: false,
@@ -59,12 +65,20 @@ func TestGetMountedFiles(t *testing.T) {
 			name: "target path dir/dir/file found",
 			targetPath: func(t *testing.T) string {
 				dir := tmpdir.New(t, "", "ut")
-				os.MkdirAll(filepath.Join(dir, "subdir"), 0700)
-				os.Create(filepath.Join(dir, "subdir", "secret.txt"))
+				if err := os.MkdirAll(filepath.Join(dir, "subdir"), 0700); err != nil {
+					t.Fatalf("could not make subdir: %s", err)
+				}
+				f, err := os.Create(filepath.Join(dir, "subdir", "secret.txt"))
+				if err != nil {
+					t.Fatalf("could not write file: %s", err)
+				}
+				if err := f.Close(); err != nil {
+					t.Fatalf("error writing file: %s", err)
+				}
 				return dir
 			},
 			expectedErr: false,
-			want:        []string{"subdir/secret.txt"},
+			want:        []string{filepath.Join("subdir", "secret.txt")},
 		},
 		{
 			name: "target path with atomic_writer symlinks",
@@ -86,7 +100,7 @@ func TestGetMountedFiles(t *testing.T) {
 				return dir
 			},
 			expectedErr: false,
-			want:        []string{"foo/bar.txt"},
+			want:        []string{filepath.Join("foo", "bar.txt")},
 		},
 	}
 
