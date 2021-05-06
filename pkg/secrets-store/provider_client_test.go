@@ -79,13 +79,13 @@ func TestMountContent(t *testing.T) {
 			files: []*v1alpha1.File{
 				{
 					Path:     "foo",
-					Mode:     0600,
+					Mode:     0666,
 					Contents: []byte("foo"),
 				},
 			},
 			objectVersions: map[string]string{"foo": "v1"},
 			expectedFiles: map[string]os.FileMode{
-				"foo": 0600,
+				"foo": 0666,
 			},
 		},
 		{
@@ -94,19 +94,19 @@ func TestMountContent(t *testing.T) {
 			files: []*v1alpha1.File{
 				{
 					Path:     "foo",
-					Mode:     0600,
+					Mode:     0666,
 					Contents: []byte("foo"),
 				},
 				{
 					Path:     "bar",
-					Mode:     0400,
+					Mode:     0444,
 					Contents: []byte("bar"),
 				},
 			},
 			objectVersions: map[string]string{"foo": "v1"},
 			expectedFiles: map[string]os.FileMode{
-				"foo": 0600,
-				"bar": 0400,
+				"foo": 0666,
+				"bar": 0444,
 			},
 		},
 		{
