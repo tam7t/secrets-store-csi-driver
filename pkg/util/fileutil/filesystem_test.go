@@ -19,6 +19,7 @@ package fileutil
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -93,6 +94,14 @@ func TestGetMountedFiles(t *testing.T) {
 						Data: []byte("foo"),
 						Mode: 0700,
 					},
+					"foo/baz.txt": {
+						Data: []byte("baz"),
+						Mode: 0700,
+					},
+					"foo.txt": {
+						Data: []byte("foo.txt"),
+						Mode: 0700,
+					},
 				})
 				if err != nil {
 					t.Fatalf("unable to write FileProjection: %s", err)
@@ -100,7 +109,11 @@ func TestGetMountedFiles(t *testing.T) {
 				return dir
 			},
 			expectedErr: false,
-			want:        []string{filepath.Join("foo", "bar.txt")},
+			want: []string{
+				"foo.txt",
+				filepath.Join("foo", "bar.txt"),
+				filepath.Join("foo", "baz.txt"),
+			},
 		},
 	}
 
@@ -115,6 +128,7 @@ func TestGetMountedFiles(t *testing.T) {
 			for k := range got {
 				gotKeys = append(gotKeys, k)
 			}
+			sort.Strings(gotKeys)
 
 			if diff := cmp.Diff(test.want, gotKeys, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("GetMountedFiles() keys mismatch (-want +got):\n%s", diff)
