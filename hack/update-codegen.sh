@@ -38,7 +38,7 @@ if [[ "${VERIFY_CODEGEN:-}" == "true" ]]; then
 fi
 COMMON_FLAGS="${VERIFY_FLAG:-} --go-header-file ${SCRIPT_ROOT}/hack/boilerplate.go.txt"
 
-# reference from https://github.com/servicemeshinterface/smi-sdk-go/blob/master/hack/update-codegen.sh
+# reference from https://github.com/servicemeshinterface/smi-sdk-go/blob/main/hack/update-codegen.sh
 # the generate-groups.sh script cannot handle group names with dashes, so we use secretsstore.csi.x-k8s.io as the group name
 if [[ "$OSTYPE" == "darwin"* ]]; then
   find "${SCRIPT_ROOT}/apis" -type f -exec sed -i '' 's/secrets-store.csi.x-k8s.io/secretsstore.csi.x-k8s.io/g' {} +
@@ -66,7 +66,7 @@ echo "Generating informers at ${OUTPUT_PKG}/informers"
 echo "Generating register at ${FQ_APIS}"
 "${gobin}/register-gen" --output-package "${FQ_APIS}" --input-dirs ${FQ_APIS} "${COMMON_FLAGS}"
 
-# reference from https://github.com/servicemeshinterface/smi-sdk-go/blob/master/hack/update-codegen.sh
+# reference from https://github.com/servicemeshinterface/smi-sdk-go/blob/main/hack/update-codegen.sh
 # replace secretsstore.csi.x-k8s.io with secrets-store.csi.x-k8s.io after code generation
 if [[ "$OSTYPE" == "darwin"* ]]; then
   find "${SCRIPT_ROOT}/apis" -type f -exec sed -i '' 's/secretsstore.csi.x-k8s.io/secrets-store.csi.x-k8s.io/g' {} +
